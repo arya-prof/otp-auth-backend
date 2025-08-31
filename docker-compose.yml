@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile.minimal
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=otp_auth
+      - DB_SSLMODE=disable
+      - DB_MAX_OPEN_CONNS=25
+      - DB_MAX_IDLE_CONNS=25
+      - DB_CONN_MAX_LIFETIME=5m
+      - DB_CONN_MAX_IDLE_TIME=5m
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      - REDIS_POOL_SIZE=20
+      - REDIS_MIN_IDLE_CONNS=5
+      - REDIS_MAX_RETRIES=3
+      - REDIS_DIAL_TIMEOUT=5s
+      - REDIS_READ_TIMEOUT=3s
+      - REDIS_WRITE_TIMEOUT=3s
+      - REDIS_POOL_TIMEOUT=4s
+      - JWT_SECRET=your-secret-key-change-in-production
+      - JWT_EXPIRATION=168h
+      - OTP_LENGTH=6
+      - OTP_EXPIRATION=2m
+      - OTP_MAX_RETRIES=3
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - RATE_LIMIT_WINDOW=1m
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+      - ENABLE_CORS=true
+      - ENABLE_RATE_LIMIT=true
+      - ENABLE_HTTPS=false
+      - TRUSTED_PROXIES=127.0.0.1,::1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./docs:/app/docs
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=otp_auth
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d otp_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+    command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
