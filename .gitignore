@@ -55,8 +55,5 @@ temp/
 coverage.out
 coverage.html
 
-# Swagger docs (will be generated)
-docs/
-
 # Air live reload
 tmp/

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Authentication Backend Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sidebar { height: calc(100vh - 4rem); overflow-y: auto; }
+        .content { height: calc(100vh - 4rem); overflow-y: auto; }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover { background-color: #f3f4f6; transform: translateX(4px); }
+        .nav-item.active { background-color: #3b82f6; color: white; }
+        .code-block { background-color: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; font-family: 'Courier New', monospace; overflow-x: auto; }
+        .highlight { background-color: #fef3c7; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: 500; }
+        .endpoint-method { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .method-post { background-color: #10b981; color: white; }
+        .method-get { background-color: #3b82f6; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900">OTP Authentication Backend</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="https://github.com/arya-prof/otp-auth-backend" class="text-gray-500 hover:text-gray-700">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                    <button id="theme-toggle" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-moon text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <aside class="w-64 bg-white shadow-sm sidebar">
+            <nav class="p-4">
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Getting Started</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#overview" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">Overview</a></li>
+                        <li><a href="#setup" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">Setup Guide</a></li>
+                        <li><a href="#api" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">API Reference</a></li>
+                    </ul>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Development</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#database-choice" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">Database Choice</a></li>
+                        <li><a href="#docker" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">Docker Setup</a></li>
+                        <li><a href="#swagger" class="nav-item block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">Swagger UI</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 content">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div id="overview" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Project Overview</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <p class="text-gray-600 mb-6">
+                            A robust backend service for OTP-based authentication and user management built with Go, 
+                            featuring secure JWT tokens, Redis caching, PostgreSQL database, and comprehensive API documentation.
+                        </p>
+                        
+                        <!-- Architecture Diagram Section -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">System Architecture</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg border-2 border-dashed border-gray-300">
+                                <img src="Untitled diagram _ Mermaid Chart-2025-08-31-062551.png" 
+                                     alt="OTP Authentication Backend Architecture Diagram" 
+                                     class="w-full h-auto max-w-4xl mx-auto rounded-lg shadow-lg"
+                                     style="max-height: 600px; object-fit: contain;">
+                                <p class="text-sm text-gray-500 text-center mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    System architecture showing the flow from client requests through services to data storage
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-blue-800 mb-2">Backend API</h4>
+                                <p class="text-blue-700 text-sm">Go/Gin server with JWT authentication and OTP verification</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-green-800 mb-2">Database</h4>
+                                <p class="text-green-700 text-sm">PostgreSQL with automatic migrations and connection pooling</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-purple-800 mb-2">Caching</h4>
+                                <p class="text-purple-700 text-sm">Redis for OTP storage and rate limiting</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Key Features</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li><span class="highlight">OTP Authentication:</span> Secure phone number verification with rate limiting</li>
+                            <li><span class="highlight">JWT Tokens:</span> Stateless authentication with configurable expiration</li>
+                            <li><span class="highlight">User Management:</span> CRUD operations with pagination and search</li>
+                            <li><span class="highlight">Rate Limiting:</span> Configurable request throttling for security</li>
+                            <li><span class="highlight">API Documentation:</span> Auto-generated Swagger/OpenAPI specs</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="setup" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Setup Guide</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Start</h3>
+                        <p class="text-gray-600 mb-4">Follow these steps to get the OTP Authentication Backend running:</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">1. Clone and Setup</h4>
+                                <div class="code-block">
+                                    <code>git clone https://github.com/arya-prof/otp-auth-backend.git<br>
+cd otp-auth-backend<br>
+go mod tidy</code>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">2. Start with Docker</h4>
+                                <div class="code-block">
+                                    <code>docker-compose up -d<br><br>
+# Or build and run locally<br>
+go run cmd/main.go</code>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">3. Access Services</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• <strong>Backend API:</strong> http://localhost:8080</li>
+                                        <li>• <strong>Swagger UI:</strong> http://localhost:8080/swagger/index.html</li>
+                                        <li>• <strong>Health Check:</strong> http://localhost:8080/health</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="api" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">API Reference</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Base URL</h3>
+                        <p class="text-gray-600 mb-4">All API endpoints are prefixed with: <code class="highlight">http://localhost:8080/api/v1</code></p>
+                        
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 mt-8">Authentication Endpoints</h3>
+                        
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="endpoint-method method-post">POST</span>
+                                <span class="text-sm text-gray-600">/api/v1/auth/request-otp</span>
+                            </div>
+                            <p class="text-gray-600 mb-2">Generate and send OTP to the specified phone number</p>
+                            <div class="code-block">
+                                <code>curl -X POST http://localhost:8080/api/v1/auth/request-otp \<br>
+  -H "Content-Type: application/json" \<br>
+  -d '{"phone": "+1234567890"}'</code>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="endpoint-method method-post">POST</span>
+                                <span class="text-sm text-gray-600">/api/v1/auth/verify-otp</span>
+                            </div>
+                            <p class="text-gray-600 mb-2">Verify OTP code and authenticate user</p>
+                            <div class="code-block">
+                                <code>curl -X POST http://localhost:8080/api/v1/auth/verify-otp \<br>
+  -H "Content-Type: application/json" \<br>
+  -d '{"phone": "+1234567890", "otp": "123456"}'</code>
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 mt-8">User Management Endpoints</h3>
+                        
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="endpoint-method method-get">GET</span>
+                                <span class="text-sm text-gray-600">/api/v1/users</span>
+                            </div>
+                            <p class="text-gray-600 mb-2">Get paginated list of users (requires authentication)</p>
+                            <div class="code-block">
+                                <code>curl -X GET "http://localhost:8080/api/v1/users?page=1&limit=10" \<br>
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"</code>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="endpoint-method method-get">GET</span>
+                                <span class="text-sm text-gray-600">/api/v1/users/{id}</span>
+                            </div>
+                            <p class="text-gray-600 mb-2">Get user by ID (requires authentication)</p>
+                            <div class="code-block">
+                                <code>curl -X GET "http://localhost:8080/api/v1/users/user-uuid" \<br>
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="database-choice" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Database Choice Justification</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-blue-800 mb-2">PostgreSQL - Primary Database</h4>
+                                <ul class="text-blue-700 text-sm space-y-1">
+                                    <li>• ACID compliance for data integrity</li>
+                                    <li>• Advanced indexing and query optimization</li>
+                                    <li>• JSON support for flexible data structures</li>
+                                    <li>• Robust user management and permissions</li>
+                                    <li>• Excellent Go driver support (lib/pq)</li>
+                                </ul>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-green-800 mb-2">Redis - Caching Layer</h4>
+                                <ul class="text-green-700 text-sm space-y-1">
+                                    <li>• Sub-millisecond response times</li>
+                                    <li>• Built-in TTL for OTP expiration</li>
+                                    <li>• Atomic operations for rate limiting</li>
+                                    <li>• Pub/Sub for real-time features</li>
+                                    <li>• Memory-efficient data structures</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Architecture Benefits</h3>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-800">Data Persistence</span>
+                                <span class="text-sm text-gray-600">PostgreSQL ensures user data survives restarts</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-800">Performance</span>
+                                <span class="text-sm text-gray-600">Redis provides lightning-fast OTP lookups</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-800">Scalability</span>
+                                <span class="text-sm text-gray-600">Horizontal scaling with read replicas</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-800">Security</span>
+                                <span class="text-sm text-gray-600">Role-based access control and encryption</span>
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Use Case Alignment</h3>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex">
+                                <i class="fas fa-lightbulb text-yellow-400 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-yellow-800">Perfect for OTP Authentication</h4>
+                                    <p class="text-yellow-700 text-sm">
+                                        This combination excels for OTP systems: PostgreSQL stores user profiles and authentication history, 
+                                        while Redis handles temporary OTP codes with automatic expiration and rate limiting.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="docker" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Docker Setup</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Containerized Deployment</h3>
+                        <p class="text-gray-600 mb-4">
+                            The project includes Docker configuration for easy deployment and development.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">1. Build and Start Services</h4>
+                                <div class="code-block">
+                                    <code># Build and start all services<br>
+docker-compose up -d<br><br>
+# View logs<br>
+docker-compose logs -f app</code>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">2. Service Management</h4>
+                                <div class="code-block">
+                                    <code># Stop services<br>
+docker-compose down<br><br>
+# Rebuild after code changes<br>
+docker-compose build --no-cache</code>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">3. Service Access</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>• <strong>Backend API:</strong> http://localhost:8080</li>
+                                        <li>• <strong>PostgreSQL:</strong> localhost:5432</li>
+                                        <li>• <strong>Redis:</strong> localhost:6379</li>
+                                        <li>• <strong>Swagger UI:</strong> http://localhost:8080/swagger/index.html</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="swagger" class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Interactive API Documentation</h2>
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Swagger UI</h3>
+                        <p class="text-gray-600 mb-4">
+                            Access the interactive API documentation with Swagger UI to test endpoints directly from your browser.
+                        </p>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <h4 class="font-medium text-blue-800 mb-2">Swagger UI Access</h4>
+                            <p class="text-blue-700 text-sm mb-2">
+                                The Swagger UI is available at: 
+                                <a href="http://localhost:8080/swagger/index.html" class="underline font-medium" target="_blank">
+                                    http://localhost:8080/swagger/index.html
+                                </a>
+                            </p>
+                            <p class="text-blue-700 text-sm">
+                                This provides interactive documentation for all API endpoints with the ability to test requests directly.
+                            </p>
+                        </div>
+
+                        <h4 class="font-medium text-gray-800 mb-2">Features</h4>
+                        <ul class="space-y-2 text-gray-600 mb-6">
+                            <li>• Interactive endpoint testing</li>
+                            <li>• Request/response examples</li>
+                            <li>• Authentication token input</li>
+                            <li>• Schema definitions</li>
+                            <li>• Error code documentation</li>
+                        </ul>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex">
+                                <i class="fas fa-exclamation-triangle text-yellow-400 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-yellow-800">Note</h4>
+                                    <p class="text-yellow-700 text-sm">Make sure the backend service is running before accessing the Swagger UI.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const icon = themeToggle.querySelector('i');
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            if (document.body.classList.contains('dark')) {
+                icon.className = 'fas fa-sun text-xl';
+                document.body.classList.add('bg-gray-900');
+                document.body.classList.remove('bg-gray-50');
+            } else {
+                icon.className = 'fas fa-moon text-xl';
+                document.body.classList.remove('bg-gray-900');
+                document.body.classList.add('bg-gray-50');
+            }
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Active navigation highlighting
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('[id]');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === `#${current}`) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
